@@ -11,7 +11,8 @@
   (:use [clojure.contrib.json :only [read-json]]
         [clojure.java.io :only [reader]]
         [clj-http.client :only [generate-query-string]]
-        [clj-http.client :only [unexceptional-status?]])
+        [clj-http.client :only [unexceptional-status?]]
+        [clojure.string :only [blank?]])
   (:use ring.middleware.params))
 
 (defn parse-params
@@ -30,7 +31,7 @@
   "Builds a URL string which corresponds to the information of the request."
   (let [{:keys [server-port server-name uri query-string scheme]} request]
     (str (name scheme) "://" server-name (when server-port (str ":" server-port)) uri
-         (when query-string "?") query-string)))
+         (when (not (blank? query-string)) "?") query-string)))
 
 (defn request-to-url
   "Transforms a clj-http request with its query parameters into a full URL."

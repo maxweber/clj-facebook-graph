@@ -10,7 +10,8 @@
   "Middleware for Ring to realize a simple Facebook authentication."
   (:use [clj-facebook-graph.helper :only [parse-params build-url]]
         [clj-facebook-graph.auth :only [get-access-token facebook-auth-url-str with-facebook-auth]]
-        [ring.util.response :only [redirect]])
+        [ring.util.response :only [redirect]]
+        [clj-http.client :only [generate-query-string]])
   (:import clj_facebook_graph.FacebookGraphException))
 
 (defn add-facebook-auth
@@ -23,11 +24,9 @@
    parameter in the case of an successful authentication to the redirect_uri. It's
    flexible so that every URL and not only the login URL of your web application
    can be the redirect_uri of the Facebook authentication process.
-   For this reason the redirect_uri is extracted from
-   the request's referer, when the Facebook Graph API calls your web application back.
-   Then an access token is fetched by clj-http and a redirect to the originally requested
-   URL (the redirect_uri) is triggered to get rid of the 'code' parameter in the web browser
-   of your user, thereby the access token is associated with the user's session.
+   A redirect is triggered to the redirect_uri with out the code query parameter
+   to get rid of the 'code' parameter in the web browser of your user, thereby the
+   access token is associated with the user's session.
    An example:
 
    You have a path in your web application like:
@@ -57,16 +56,14 @@
     (fn [request]
       (let [referer (get-in request [:headers "referer"])
             code (get-in request [:params "code"])]
-        (if (and (not (nil? referer)) (.startsWith referer "http://www.facebook.com/connect/uiserver.php")
+        (println "The request " request)
+        (if (and (not (nil? referer))
+                 (.startsWith referer "http://www.facebook.com/connect/uiserver.php")
                  code)
-          (let [{redirect-uri "redirect_uri" next "next"} (parse-params referer)
-                redirect-uri (if redirect-uri redirect-uri next) ; when
-                                        ; you have no Facebook cookie
-                                        ; at all Facebook use the
-                                        ; query parameter redirect_uri
-                                        ; otherwise a query parameter
-                                        ; with the name next is
-                                        ; used. Awesome ;-)
+          (let [query-params (parse-params (:query-string request))
+                query-params (dissoc query-params "code")
+                redirect-uri (build-url (assoc request :query-string
+                                               (generate-query-string query-params)))
                 access-token (get-access-token client-id redirect-uri client-secret code)
                 session (add-facebook-auth (:session request) access-token)]
             (assoc (redirect redirect-uri) :session session))
@@ -96,7 +93,8 @@
         (catch FacebookGraphException e
           (if (let [error (:error @e)] (or (auth-errors error)
                                            (= :facebook-login-required error)))
-            (redirect (facebook-auth-url-str client-id (build-url request) permissions))
+            (let [redirect-uri (build-url request)]
+              (redirect (facebook-auth-url-str client-id redirect-uri permissions)))
             (throw e)))))))
 
 (defn wrap-facebook-auth [handler]
