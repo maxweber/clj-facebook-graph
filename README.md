@@ -15,7 +15,7 @@ See the source code for documentation, a detailed introduction will follow. In t
 
 Fill in the app id (client-id) and secret (client-secret) of your Facebook app (http://www.facebook.com/developers/apps.php).
 
-Pay attention that your Facebook app have the site location "http://localhost/" and the website domain "localhost", otherwise Facebook will not accept your request, when your web application runs locally.
+Pay attention that the settings of your Facebook app contains the site location "http://localhost/" and the website domain "localhost", otherwise Facebook will not accept your request, when your web application runs locally.
 
 To start the Jetty server in the example, evaluate the line (def server (start-server)) in your REPL under the clj-facebook-graph.example namespace.
 
