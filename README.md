@@ -89,7 +89,7 @@ clj-facebook-graph have even more conveniences to offer:
 
 Instead of writing:
 
-        (with-facebook-auth facebook-auth (client/get "https://graph.facebook.com/me/friends"))
+    (with-facebook-auth facebook-auth (client/get "https://graph.facebook.com/me/friends"))
 
 You can simply write:
 
@@ -116,14 +116,15 @@ this one:
 So instead of extracting the data part of the body manual each an
 every time, you can simply write the following:
 
-      (with-facebook-auth facebook-auth (client/get [:me :friends]
+     (with-facebook-auth facebook-auth (client/get [:me :friends]
                           {:extract :data}))
 
 This also works for the paging and other parts of the
 response. Besides clj-facebook-graph also supports to handle the
 pagination of an response automatically:
 
-      (take 5 (with-facebook-auth facebook-auth (client/get [:me :home] {:query-parameters {:limit 5} :extract :data :paging true})))
+     (take 5 (with-facebook-auth facebook-auth 
+             (client/get [:me :home] {:query-parameters {:limit 5} :extract :data :paging true})))
 
 The above code only fetchs five items at a time from your Facebook
 news feed. It's a lazy seq so if you would take 6 items another
