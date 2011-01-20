@@ -51,7 +51,7 @@
   in the request map. If you like, you can also extract the paging part (':request :paging').
   If you add paging to your Facebook Graph API request through a query parameter like
   limit (see 'http://developers.facebook.com/docs/api/#reading' for details) you can also
-  add the map entry ':extract :data :paging :true' and you get a lazy-seq as request body, which
+  add the map entry ':extract :data :paging true' and you get a lazy-seq as request body, which
   automatically triggers the pagination as you walk through the seq.
   This Ring-style middleware also supports to simply extract the body part of the request
   (':extract :body'). "
