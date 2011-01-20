@@ -109,21 +109,21 @@ instead of the more precise mime type "application/json".
 
 The Facebook Graph API mostly returns a JSON document in the form like
 this one:
-     {
-         \"data\": [...]
-     }
+    {
+        \"data\": [...]
+    }
 
 So instead of extracting the data part of the body manual each an
 every time, you can simply write the following:
 
-     (with-facebook-auth facebook-auth (client/get [:me :friends]
+    (with-facebook-auth facebook-auth (client/get [:me :friends]
                           {:extract :data}))
 
 This also works for the paging and other parts of the
 response. Besides clj-facebook-graph also supports to handle the
 pagination of an response automatically:
 
-     (take 5 (with-facebook-auth facebook-auth 
+    (take 5 (with-facebook-auth facebook-auth 
              (client/get [:me :home] {:query-parameters {:limit 5} :extract :data :paging true})))
 
 The above code only fetchs five items at a time from your Facebook
