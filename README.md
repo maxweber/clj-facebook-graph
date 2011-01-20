@@ -20,7 +20,9 @@ in clj-facebook-graph. For further reading please consider the offical
 Facebook Graph API documentation:
 
 http://developers.facebook.com/docs/api/
+
 http://developers.facebook.com/docs/authentication/
+
 http://developers.facebook.com/docs/
 
 ## Usage
@@ -42,7 +44,7 @@ the clj-facebook-graph.auth/with-facebook-auth macro:
     (with-facebook-auth facebook-auth 
                         (client/get "https://graph.facebook.com/me/friends"))
 
-The code lines above will return a list with all your ("/me/")
+The code lines above will return a list of all your ("/me/")
 Facebook friends, if you have received an access token with your
 Facebook credentials. The access token is appended to the URL
 automatically, if you provide it in a map (like the facebook-auth
@@ -91,7 +93,7 @@ Instead of writing:
 
 You can simply write:
 
-(with-facebook-auth facebook-auth (client/get [:me :friends]))
+    (with-facebook-auth facebook-auth (client/get [:me :friends]))
 
 It doesn't matter if :me or :friends is a keyword or a string, you can
 use both or even mix it. This shortcut works for every part of the
@@ -107,23 +109,25 @@ instead of the more precise mime type "application/json".
 
 The Facebook Graph API mostly returns a JSON document in the form like
 this one:
-   {
-      \"data\": [...]
-   }
+     {
+         \"data\": [...]
+     }
+
 So instead of extracting the data part of the body manual each an
 every time, you can simply write the following:
 
-(with-facebook-auth facebook-auth (client/get [:me :friends] {:extract
-:data}))
+      (with-facebook-auth facebook-auth (client/get [:me :friends]
+                          {:extract :data}))
 
 This also works for the paging and other parts of the
 response. Besides clj-facebook-graph also supports to handle the
 pagination of an response automatically:
 
-(take 5 (with-facebook-auth facebook-auth (client/get [:me :home] {:query-parameters {:limit 5} :extract :data :paging true})))
+      (take 5 (with-facebook-auth facebook-auth (client/get [:me :home] {:query-parameters {:limit 5} :extract :data :paging true})))
 
-The above code only fetchs two items at a time from your Facebook
-news feed. It's a lazy seq 
+The above code only fetchs five items at a time from your Facebook
+news feed. It's a lazy seq so if you would take 6 items another
+request would be triggered to the next page URL.
 
 ## Installation
 
