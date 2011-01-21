@@ -1,8 +1,9 @@
 # clj-facebook-graph
 
 clj-facebook-graph is a simple Clojure client for the Facebook Graph
-API based on clj-http and Ring. It offers some convenience when you
-are working with the Facebook Graph API. Furthermore
+API based on clj-http (https://github.com/getwoven/clj-http) and
+Ring (https://github.com/mmcgrana/ring). It offers some convenience
+when you are working with the Facebook Graph API. Furthermore
 clj-facebook-graph provides a simple authentication flow in the form
 of some Ring middleware.
 
