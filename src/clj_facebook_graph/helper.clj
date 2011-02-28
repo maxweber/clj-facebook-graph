@@ -8,12 +8,14 @@
 
 (ns clj-facebook-graph.helper
   "Some helper functions."
-  (:use [clojure.contrib.json :only [read-json]]
+  (:use [clojure.contrib.json :only [read-json read-json-from Read-JSON-From]]
         [clojure.java.io :only [reader]]
         [clj-http.client :only [generate-query-string]]
         [clj-http.client :only [unexceptional-status?]]
-        [clojure.string :only [blank?]])
-  (:use ring.middleware.params))
+        [clojure.string :only [blank?]]
+        ring.middleware.params)
+  (:import
+   (java.io PushbackReader ByteArrayInputStream InputStreamReader)))
 
 (def facebook-base-url "https://graph.facebook.com")
 
@@ -23,11 +25,12 @@
   (let [f (ns-resolve 'ring.middleware.params 'parse-params)]
     (f params "UTF-8")))
 
-(defn read-json-body
-  "Reads a JSON document from a request body."
-  [request]
-  (let [body (:body request)]
-    (read-json (if (string? body) body (reader body)))))
+(extend-type (Class/forName "[B")
+  Read-JSON-From
+   (read-json-from [input keywordize? eof-error? eof-value]
+                   (read-json-from (PushbackReader. (InputStreamReader.
+                                                      (ByteArrayInputStream. input)))
+                    keywordize? eof-error? eof-value)))
 
 (defn build-url [request]
   "Builds a URL string which corresponds to the information of the request."
