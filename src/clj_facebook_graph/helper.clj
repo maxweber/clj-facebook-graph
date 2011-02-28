@@ -51,3 +51,9 @@
               (unexceptional-status? status))
         resp
         (throw (Exception. (str "Status: " status " body: " (slurp body))))))))
+
+(defn wrap-print-request-map [client]
+  "Simply prints the request map to *out*."
+  (fn [req]
+    (println req)
+    (client req)))
