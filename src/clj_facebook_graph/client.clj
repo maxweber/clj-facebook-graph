@@ -30,7 +30,7 @@
           (client (assoc req :url url)))
         (client req)))))
 
-(defn wrap-json-output-coercion [client]
+(defn wrap-json-response-conversion [client]
   "Automatically transforms the body of a response of a Facebook Graph API request from JSON to a Clojure
    data structure through the use of clojure.contrib.json. It checks if the header Content-Type
    is 'text/javascript' which the Facebook Graph API returns in the case of a JSON response."
@@ -80,7 +80,7 @@
          wrap-exceptions
          wrap-request-fn
          wrap-facebook-access-token
-         wrap-json-output-coercion
+         wrap-json-response-conversion
          wrap-facebook-url-builder
          wrap-facebook-data-extractor
          ))
