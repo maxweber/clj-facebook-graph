@@ -8,9 +8,10 @@
 
 (ns clj-facebook-graph.client
   "A client for the Facebook Graph API based on clj-http."
-  (:use [clj-facebook-graph.helper :only [read-json-body wrap-exceptions facebook-base-url]]
+  (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url]]
         [clj-facebook-graph.auth :only [wrap-facebook-access-token]]
-        [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]])
+        [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
+        [clojure.contrib.json :only [read-json]])
   (:require [clj-http.client :as client]))
 
 (defn wrap-facebook-url-builder [client]
@@ -35,9 +36,10 @@
   (fn [req]
     (let [{:keys [headers] :as resp} (client req)
           content-type (headers "content-type")]
-      (if (or (nil? content-type)
-              (not (.startsWith content-type "text/javascript")))
-        resp (assoc resp :body (read-json-body resp))))))
+      (if (and (not (nil? content-type))
+               (.startsWith content-type "text/javascript"))
+        (assoc resp :body (read-json (:body resp)))
+        resp))))
 
 (defn wrap-facebook-data-extractor [client]
   "The Facebook Graph API mostly returns a JSON document in the form like this one:
