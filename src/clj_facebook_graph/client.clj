@@ -57,7 +57,8 @@
   (':extract :body'). "
   (fn [req]
     (let [{:keys [extract paging]} req
-          body (:body (client req))]
+          response (client req)
+          body (:body response)]
       (if extract
         (if (= :body extract)
           body
@@ -69,7 +70,7 @@
                           (the-client {:method :get :url url :extract :data :paging true}))
                 [])
               extraction)))
-        (client req)))))
+        response))))
 
 (defn wrap-request
   "Wraps the clj-http client with the Ring-style middleware for the
