@@ -8,12 +8,10 @@
 
 (ns clj-facebook-graph.client
   "A client for the Facebook Graph API based on clj-http."
-  (:use [clj-facebook-graph.helper :only [read-json-body wrap-exceptions]]
+  (:use [clj-facebook-graph.helper :only [read-json-body wrap-exceptions facebook-base-url]]
         [clj-facebook-graph.auth :only [wrap-facebook-access-token]]
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]])
   (:require [clj-http.client :as client]))
-
-(def facebook-base-url "https://graph.facebook.com")
 
 (defn wrap-facebook-url-builder [client]
   "Offers some convenience by assemble a Facebook Graph API URL from a vector of keywords or strings.

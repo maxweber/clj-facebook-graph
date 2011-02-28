@@ -1,5 +1,6 @@
 (ns clj-facebook-graph.auth
-  (:use [clj-facebook-graph.helper :only [parse-params request-to-url wrap-exceptions]]
+  (:use [clj-facebook-graph.helper :only [parse-params request-to-url wrap-exceptions
+                                          facebook-base-url]]
         [clj-http.client :only [wrap-request]])
   (:require [clj-http.client :as client]))
 
@@ -78,10 +79,13 @@ secret (client-secret) of your Facebook app.
      ~@body))
 
 (defn wrap-facebook-access-token [client]
-  "Ring-style middleware to add the Facebook access token to the request, when it is found in the thread bounded *facebook-auth* variable."
+  "Ring-style middleware to add the Facebook access token to the request, when it is found in the thread bounded *facebook-auth* variable.
+   It doesn't add the access_token query parameter, if the URL doesn't start with the facebook-base-url (https://graph.facebook.com). So
+   the clj-http client of clj-facebook-graph can also do other HTTP requests."
   (fn [req]
-    (if *facebook-auth*
-      (let [{:keys [access-token]} *facebook-auth*
-            req (with-query-params-access-token req access-token)]
-        (client req))
-      (client req))))
+    (let [url (:url req)]
+      (if (and *facebook-auth* (string? url) (.startsWith url facebook-base-url))
+        (let [{:keys [access-token]} *facebook-auth*
+              req (with-query-params-access-token req access-token)]
+          (client req))
+        (client req)))))

@@ -15,6 +15,8 @@
         [clojure.string :only [blank?]])
   (:use ring.middleware.params))
 
+(def facebook-base-url "https://graph.facebook.com")
+
 (defn parse-params
   "Transforms the query parameters of an URL into a map of parameter value pairs (both are strings)."
   [params]
