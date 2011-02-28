@@ -14,7 +14,7 @@
         [ring.middleware.session.memory :only [memory-store]]
         [ring.handler.dump :only [handle-dump]]
         [clj-facebook-graph.auth :only [facebook-auth-url with-facebook-auth]]
-        [clj-facebook-graph.client :only [facebook-base-url]]
+        [clj-facebook-graph.helper :only [facebook-base-url]]
         [clj-facebook-graph.ring-middleware :only [wrap-facebook-access-token-required
                                                    wrap-facebook-extract-callback-code
                                                    wrap-facebook-auth]]
