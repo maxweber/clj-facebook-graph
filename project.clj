@@ -8,4 +8,5 @@
                      [ring/ring-jetty-adapter "0.3.5"]
                      [ring/ring-devel "0.3.5"]
                      [ring/ring-jetty-adapter "0.3.5"]
-                     [compojure "0.5.3"]])
+                     [compojure "0.5.3"]]
+  :aot [clj-facebook-graph.FacebookGraphException])
