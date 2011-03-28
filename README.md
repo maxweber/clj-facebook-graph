@@ -64,7 +64,10 @@ clj-facebook-graph have several Ring middleware handlers that realize a
 simple Facebook authentication flow. Take a look at
 clj-facebook-graph.example in the test source folder. There you can
 find a full blown example how to use clj-facebook-graph to do an
-authentication via Facebook to receive an access token. Furthermore
+authentication via Facebook to receive an access token. Pay attention
+that on first-time use you have to invoke "lein compile" to compile
+the clj_facebook_graph.FacebookGraphException ahead-of-time, otherwise
+you will get a ClassNotFoundException for this class. Furthermore
 some hints are provided how to extend clj-facebook-graph. In order to
 use it you have to provide some information about your Facebook app in
 the clj_facebook_graph.example.clj:
@@ -133,7 +136,11 @@ request would be triggered to the next page URL.
 
 ## Installation
 
-This project is built with Leiningen and prepared for use with Swank Clojure.
+This project is built with Leiningen and prepared for use with Swank
+Clojure. Pay attention that on first-time use you have to invoke 
+"lein compile" to compile the clj_facebook_graph.FacebookGraphException
+ahead-of-time, otherwise you will get a ClassNotFoundException for
+this class.
 
 ## License
 
