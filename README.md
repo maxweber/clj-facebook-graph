@@ -1,11 +1,14 @@
 # clj-facebook-graph
 
 clj-facebook-graph is a simple Clojure client for the Facebook Graph
-API based on clj-http (https://github.com/getwoven/clj-http) and
-Ring (https://github.com/mmcgrana/ring). It offers some convenience
+API based on [clj-http](https://github.com/getwoven/clj-http) and
+[Ring](https://github.com/mmcgrana/ring). It offers some convenience
 when you are working with the Facebook Graph API. Furthermore
 clj-facebook-graph provides a simple authentication flow in the form
 of some Ring middleware.
+
+A tutorial can be found here:
+[http://max-weber.tumblr.com/post/4183433816/clj-facebook-graph](http://max-weber.tumblr.com/post/4183433816/clj-facebook-graph)
 
 The project is at an early stage, but feel free to extend it and use
 it as foundation for your Facebook integration. Furthermore only
@@ -20,11 +23,11 @@ features of the Facebook Graph API, even when they are not documented
 in clj-facebook-graph. For further reading please consider the offical
 Facebook Graph API documentation:
 
-http://developers.facebook.com/docs/api/
+[http://developers.facebook.com/docs/api/](http://developers.facebook.com/docs/api/)
 
-http://developers.facebook.com/docs/authentication/
+[http://developers.facebook.com/docs/authentication/](http://developers.facebook.com/docs/authentication/)
 
-http://developers.facebook.com/docs/
+[http://developers.facebook.com/docs/](http://developers.facebook.com/docs/)
 
 ## Usage
 
@@ -49,11 +52,11 @@ The code lines above will return a list of all your ("/me/")
 Facebook friends, if you have received an access token with your
 Facebook credentials. The access token is appended to the URL
 automatically, if you provide it in a map (like the facebook-auth
-above) to the with-facebook-auth macro. clj-http
-(http://github.com/clj-sys/clj-http) uses the HttpComponents Client
-(http://hc.apache.org/) to do the HTTP requests and add a Ring-style
-architecture on top of it. For this reason clj-http can be extended
-through Ring-style middleware. The
+above) to the with-facebook-auth
+macro. [clj-http](http://github.com/clj-sys/clj-http) uses the
+[HttpComponents Client](http://hc.apache.org/) to do the HTTP requests
+and add a Ring-style architecture on top of it. For this reason
+clj-http can be extended through Ring-style middleware. The
 clj-facebook-graph.auth/wrap-facebook-access-token middleware takes
 care that the access_token query parameter with the supplied access
 token is added to the request URL.
@@ -78,7 +81,7 @@ the clj_facebook_graph.example.clj:
                             :permissions  ["user_photos" "friends_photos"]})
 
 Fill in the app id (client-id) and secret (client-secret) of your
-Facebook app (http://www.facebook.com/developers/apps.php).
+[Facebook app](http://www.facebook.com/developers/apps.php).
 
 Pay attention that the settings of your Facebook app contains the site
 location "http://localhost/" and the website domain "localhost",
@@ -101,7 +104,7 @@ You can simply write:
 
 It doesn't matter if :me or :friends is a keyword or a string, you can
 use both or even mix it. This shortcut works for every part of the
-Facebook Graph API (http://developers.facebook.com/docs/api/).
+[Facebook Graph API](http://developers.facebook.com/docs/api/).
 
 
 The Facebook Graph API is a restful web service which almost always
