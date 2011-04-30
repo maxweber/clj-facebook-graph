@@ -144,6 +144,14 @@ extra permissions, you can't query friend's birthdays by default.)
     (with-facebook-auth facebook-auth
       (client/get [:me :friends] {:query-params {:fields "link,birthday,name,picture"} :extract :data}))))
 
+If your app uses the Facebook canvas feature you will often need to make sense of the signed_request
+parameter that Facebook hides the user's information inside. No problems, pull it out of the request and
+pass it to the clj-facebook-graph.auth/decode-signed-request function. It returns a map of payload
+or nil if the signiture was wrong.
+
+    (use 'clj-facebook-graph.auth)
+    (decode-signed-request signed_request "Facebook secret key")
+
 ## Installation
 
 This project is built with Leiningen and prepared for use with Swank
