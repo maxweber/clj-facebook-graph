@@ -131,11 +131,18 @@ response. Besides clj-facebook-graph also supports to handle the
 pagination of an response automatically:
 
     (take 5 (with-facebook-auth facebook-auth 
-             (client/get [:me :home] {:query-parameters {:limit 5} :extract :data :paging true})))
+             (client/get [:me :home] {:query-params {:limit 5} :extract :data :paging true})))
 
 The above code only fetchs five items at a time from your Facebook
 news feed. It's a lazy seq so if you would take 6 items another
 request would be triggered to the next page URL.
+
+As you can see the :query-params key is used to specify extra parameters for the request. Here's
+another example that specifies the fields we want Facebook to return. (Note this example requires
+extra permissions, you can't query friend's birthdays by default.)
+
+    (with-facebook-auth facebook-auth
+      (client/get [:me :friends] {:query-params {:fields "link,birthday,name,picture"} :extract :data}))))
 
 ## Installation
 
