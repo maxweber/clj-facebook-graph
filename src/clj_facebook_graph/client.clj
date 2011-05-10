@@ -11,7 +11,8 @@
   (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url]]
         [clj-facebook-graph.auth :only [wrap-facebook-access-token]]
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
-        [clojure.contrib.json :only [read-json]])
+        [clojure.contrib.json :only [read-json]]
+        [clj-http.util :only [url-encode]])
   (:require [clj-http.client :as client]))
 
 (defn wrap-facebook-url-builder [client]
@@ -72,6 +73,22 @@
               extraction)))
         response))))
 
+(defn form-urlencoded [m]
+  (apply str (interpose "&" (map
+                             (fn [[key value]]
+                               (str (url-encode (name key)) "=" (url-encode value))) m))))
+
+
+(defn wrap-form-params [client]
+  (fn [req]
+    (let [{:keys [form-params method]} req]
+      (if (and (= :post method) form-params)
+        (let [req (assoc req
+                    :body (form-urlencoded form-params)
+                    :content-type "application/x-www-form-urlencoded")]
+          (client req))
+        (client req)))))
+
 (defn wrap-request
   "Wraps the clj-http client with the Ring-style middleware for the
    Facebook Graph API."
@@ -84,6 +101,7 @@
          wrap-json-response-conversion
          wrap-facebook-url-builder
          wrap-facebook-data-extractor
+         wrap-form-params
          ))
   ([request] (wrap-request request client/wrap-request)))
 
@@ -95,3 +113,8 @@
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [req]]
   (request (merge req {:method :get :url url})))
+
+(defn post
+  "Like #'request, but sets the :method and :url as appropriate."
+  [url & [req]]
+  (request (merge req {:method :post :url url})))

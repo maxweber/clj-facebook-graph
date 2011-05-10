@@ -77,7 +77,7 @@
 (defonce facebook-app-info {:client-id "your Facebook app id"
                             :client-secret "your Facebook app's secret"
                             :redirect-uri "http://localhost:8080/facebook-callback"
-                            :permissions  ["user_photos" "friends_photos"]})
+                            :permissions  ["user_photos" "friends_photos" "publish_stream"]})
 
 (defroutes app
   (GET "/facebook-login" [] (redirect (facebook-auth-url facebook-app-info)))
@@ -147,3 +147,14 @@
   [name & body]
   `(let [current-fb-users# (facebook-auth-by-name)]
     (with-facebook-auth (current-fb-users# ~name) ~@body)))
+
+(def example-wall-post
+     {:message "Check out this funny article"
+      :link "http://www.example.com/article.html"
+      :picture "http://www.example.com/article-thumbnail.jpg'"
+      :name "Article Title"
+      :caption "Caption for the link"
+      :description "Longer description of the link"
+      :actions "{\"name\": \"View on Zombo\", \"link\": \"http://www.zombo.com\"}"
+      :privacy "{\"value\": \"ALL_FRIENDS\"}"
+      :targeting "{\"countries\":\"US\",\"regions\":\"6,53\",\"locales\":\"6\"}"})

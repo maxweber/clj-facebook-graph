@@ -152,6 +152,29 @@ or nil if the signiture was wrong.
     (use 'clj-facebook-graph.auth)
     (decode-signed-request signed_request "Facebook secret key")
 
+### Posting something to the Facebook Graph API
+
+clj-facebook-graph has a basic support to do HTTP post against the
+Facebook Graph API. So for example let's post something onto your own
+wall/feed. The Facebook Graph API documentation for this use case can
+be found
+[here](http://developers.facebook.com/docs/reference/api/post/) The
+variable example-wall-post under the namespace
+clj-facebook-graph.example is a
+equivalent Clojure map to the curl example on the documentation
+page. To post this wall entry you invoke the following in the
+clj-facebook-graph.example namespace:
+
+    (with-facebook-auth facebook-auth 
+                        (client/post [:me :feed] 
+                          {:form-params example-wall-post}))
+
+Pay attention to the fact that your Facebook application needs the
+"publish_stream" permission to do this post request. You have to add
+the "publish_stream" permission to the :permissions vector in the your
+facebook-app-info. For the clj-facebook-graph.example this is already
+the case.
+
 ## Installation
 
 This project is built with Leiningen and prepared for use with Swank
