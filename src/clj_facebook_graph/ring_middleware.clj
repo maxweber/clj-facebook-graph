@@ -50,16 +50,18 @@
 
    To get rid of the 'code' query parameter in the browser of your user. In the same step the
    received access token is associated with the user's session in your web application.
+
+   Pay attention that you have specified the correct :redirect-uri in your facebook-app-info
+   otherwise this middleware can not detect if the request is a redirect for the Facebook
+   authentication or just a request with a code query parameter.
    "
   [handler facebook-app-info]
   (let [{:keys [client-id client-secret]} facebook-app-info]
     (fn [request]
-      (let [referer (get-in request [:headers "referer"])
-            code (get-in request [:params "code"])]
-        (println "The request " request)
-        (if (and (not (nil? referer))
-                 (.startsWith referer "http://www.facebook.com/connect/uiserver.php")
-                 code)
+      (let [code (get-in request [:params "code"])
+            callback-path (.getPath (java.net.URI. (:redirect-uri facebook-app-info)))]
+        (if (and code
+                 (= callback-path (:uri request)))
           (let [query-params (parse-params (:query-string request))
                 query-params (dissoc query-params "code")
                 redirect-uri (build-url (assoc request :query-string
@@ -67,8 +69,7 @@
                 access-token (get-access-token client-id redirect-uri client-secret code)
                 session (add-facebook-auth (:session request) access-token)]
             (assoc (redirect redirect-uri) :session session))
-          (handler request)))))
-  )
+          (handler request))))))
 
 (defn wrap-facebook-access-token-required
   "If the middleware for Facebook access through clj-http throws a FacebookGraphException
