@@ -19,6 +19,8 @@
 
 (def facebook-base-url "https://graph.facebook.com")
 
+(def facebook-fql-base-url "https://api.facebook.com/method/fql.query")
+
 (defn parse-params
   "Transforms the query parameters of an URL into a map of parameter value pairs (both are strings)."
   [params]

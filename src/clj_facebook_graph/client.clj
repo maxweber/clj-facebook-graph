@@ -8,7 +8,8 @@
 
 (ns clj-facebook-graph.client
   "A client for the Facebook Graph API based on clj-http."
-  (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url]]
+  (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url
+                                          facebook-fql-base-url]]
         [clj-facebook-graph.auth :only [wrap-facebook-access-token]]
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
         [clojure.contrib.json :only [read-json]]
@@ -37,8 +38,10 @@
   (fn [req]
     (let [{:keys [headers] :as resp} (client req)
           content-type (headers "content-type")]
-      (if (and (not (nil? content-type))
-               (.startsWith content-type "text/javascript"))
+      (if (and content-type
+               (or
+                (.startsWith content-type "text/javascript")
+                (.startsWith content-type "application/json")))
         (assoc resp :body (read-json (:body resp)))
         resp))))
 
@@ -78,7 +81,6 @@
                              (fn [[key value]]
                                (str (url-encode (name key)) "=" (url-encode value))) m))))
 
-
 (defn wrap-form-params [client]
   (fn [req]
     (let [{:keys [form-params method]} req]
@@ -87,6 +89,19 @@
                     :body (form-urlencoded form-params)
                     :content-type "application/x-www-form-urlencoded")]
           (client req))
+        (client req)))))
+
+(defn wrap-fql [client]
+  (fn [req]
+    (let [{:keys [url fql]} req]
+      (if (and (= url :fql))
+        (client
+         (-> req
+             (assoc :url facebook-fql-base-url)
+             (assoc-in [:query-params :query]
+                       fql)
+             (assoc-in [:query-params :format]
+                       "json")))
         (client req)))))
 
 (defn wrap-request
@@ -102,6 +117,7 @@
          wrap-facebook-url-builder
          wrap-facebook-data-extractor
          wrap-form-params
+         wrap-fql
          ))
   ([request] (wrap-request request client/wrap-request)))
 

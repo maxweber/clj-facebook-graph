@@ -1,6 +1,6 @@
 (ns clj-facebook-graph.auth
   (:use [clj-facebook-graph.helper :only [parse-params request-to-url wrap-exceptions
-                                          facebook-base-url]]
+                                          facebook-base-url facebook-fql-base-url]]
         [clj-http.client :only [wrap-request]]
         [clojure.contrib.json :only [read-json]])
   (:require [clj-http.client :as client]
@@ -89,7 +89,9 @@ secret (client-secret) of your Facebook app.
    the clj-http client of clj-facebook-graph can also do other HTTP requests."
   (fn [req]
     (let [url (:url req)]
-      (if (and *facebook-auth* (string? url) (.startsWith url facebook-base-url))
+      (if (and *facebook-auth* (string? url)
+               (or (.startsWith url facebook-base-url)
+                   (.startsWith url facebook-fql-base-url)))
         (let [{:keys [access-token]} *facebook-auth*
               req (with-query-params-access-token req access-token)]
           (client req))

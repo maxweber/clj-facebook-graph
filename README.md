@@ -175,6 +175,25 @@ the "publish_stream" permission to the :permissions vector in the your
 facebook-app-info. For the clj-facebook-graph.example this is already
 the case.
 
+### FQL
+
+clj-facebook-graph can also perform FQL queries. See Facebook's [FQL
+documentation](http://developers.facebook.com/docs/reference/fql/)
+to learn how to write a FQL query. Let's take the example FQL query
+from the documentation link:
+
+     SELECT name FROM user WHERE uid = me() 
+
+To perform this FQL query with clj-facebook-graph invoke:
+
+     (with-facebook-auth facebook-auth
+                         (client/get :fql 
+                              {:fql "SELECT name FROM user WHERE uid = me()"}))
+
+The clj-facebook-graph middleware instructs the Facebook FQL API to
+return the response as JSON, which are converted to the corresponding
+Clojure data struture automatically.
+
 ## Installation
 
 This project is built with Leiningen and prepared for use with Swank
