@@ -13,9 +13,7 @@
         [clj-http.client :only [generate-query-string]]
         [clj-http.client :only [unexceptional-status?]]
         [clojure.string :only [blank?]]
-        [clj-facebook-graph.auth :only [with-facebook-auth]]
         ring.middleware.params)
-  (:require [clj-facebook-graph.client :as client])
   (:import
    (java.io PushbackReader ByteArrayInputStream InputStreamReader)))
 
@@ -66,41 +64,3 @@
   (fn [req]
     (println req)
     (client req)))
-
-(defn extract-facebook-auth [session]
-  (:facebook-auth (val session)))
-
-(defn facebook-auth-user
-  "Get all friends of the current (logged in facebook) user."
-  [facebook-auth]
-  (with-facebook-auth facebook-auth (client/get [:me] {:extract :body})))
-
-(defn facebook-auth-by-name
-  "Take all sessions from the session-store and extracts the facebook-auth
-   information. Finally a map is created where the user's Facebook name is
-   associated with his current facebook-auth (access-token)."
-  [session-store]
-  (first (map #(let [facebook-auth (extract-facebook-auth %)
-                     user-name (:name (facebook-auth-user facebook-auth))]
-                 (identity {user-name
-                            facebook-auth}))
-              @session-store)))
-
-(defmacro with-facebook-auth-by-name
-  "Uses the informations created by #'facebook-auth-by-name to provide a
-   comfortable way to query the Facebook Graph API on the REPL by using
-   a Facebook name of a current logged in user.
-   Imagine you want to play around a little bit with the Facebook
-   Graph API on the REPL and your Facebook name is 'Max Mustermann'.
-   Then you log in to Facebook through the .../facebook-login URL.
-   Afterwards the facebook-auth (access token) information corresponding
-   to your Facebook account is associated with the corresponding HTTP
-   session. Now you can simply do the following on the REPL:
-
-   (with-facebook-auth-by-name \"Max Mustermann\" (fb-get [:me :friends]))
-
-   to list all your Facebook friends. Thereby an annoying manual lookup of
-   the corresponding access-token is avoided."
-  [session-store name & body]
-  `(let [current-fb-users# (facebook-auth-by-name ~session-store)]
-    (with-facebook-auth (current-fb-users# ~name) ~@body)))

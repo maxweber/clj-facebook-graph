@@ -22,8 +22,7 @@
         hiccup.core
         ring.adapter.jetty)
   (:require [compojure.route :as route]
-            [clj-facebook-graph.client :as client]
-            [clj-facebook-graph.helper :as helper])
+            [clj-facebook-graph.client :as client])
   (:import [java.lang Exception]
            [clj_facebook_graph FacebookGraphException]))
 
@@ -124,5 +123,6 @@
       :targeting "{\"countries\":\"US\",\"regions\":\"6,53\",\"locales\":\"6\"}"})
 
 (defmacro with-facebook-auth-by-name [name & body]
-  (list* 'clj-facebook-graph.helper/with-facebook-auth-by-name
-         'clj-facebook-graph.example/session-store name body))
+  (list* 'clj-facebook-graph.auth/with-facebook-auth-by-name
+         'clj-facebook-graph.client/get
+         @session-store name body))

@@ -127,3 +127,41 @@ secret (client-secret) of your Facebook app.
           signiture (str (strtr signiture "-_" "+/") "=")]
       (when (= signiture (hmac-sha-256 key payload))
         (read-json (base64-decode payload))))))
+
+(defn extract-facebook-auth [session]
+  (:facebook-auth (val session)))
+
+(defn facebook-auth-user
+  "Get the basic facebook user data for the given facebook-auth (access_token)."
+  [client-get facebook-auth]
+  (with-facebook-auth facebook-auth (client-get [:me] {:extract :body})))
+
+(defn facebook-auth-by-name
+  "Take all sessions from the session-store and extracts the facebook-auth
+   information. Finally a map is created where the user's Facebook name is
+   associated with his current facebook-auth (access-token)."
+  [client-get session-store]
+  (first (map #(let [facebook-auth (extract-facebook-auth %)
+                     user-name (:name (facebook-auth-user client-get facebook-auth))]
+                 (identity {user-name
+                            facebook-auth}))
+              session-store)))
+
+(defmacro with-facebook-auth-by-name
+  "Uses the informations created by #'facebook-auth-by-name to provide a
+   comfortable way to query the Facebook Graph API on the REPL by using
+   a Facebook name of a current logged in user.
+   Imagine you want to play around a little bit with the Facebook
+   Graph API on the REPL and your Facebook name is 'Max Mustermann'.
+   Then you log in to Facebook through the .../facebook-login URL.
+   Afterwards the facebook-auth (access token) information corresponding
+   to your Facebook account is associated with the corresponding HTTP
+   session. Now you can simply do the following on the REPL:
+
+   (with-facebook-auth-by-name \"Max Mustermann\" (fb-get [:me :friends]))
+
+   to list all your Facebook friends. Thereby an annoying manual lookup of
+   the corresponding access-token is avoided."
+  [client-get session-store name & body]
+  `(let [current-fb-users# (facebook-auth-by-name ~client-get ~session-store)]
+    (with-facebook-auth (current-fb-users# ~name) ~@body)))
