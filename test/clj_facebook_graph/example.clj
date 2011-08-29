@@ -22,7 +22,8 @@
         hiccup.core
         ring.adapter.jetty)
   (:require [compojure.route :as route]
-            [clj-facebook-graph.client :as client])
+            [clj-facebook-graph.client :as client]
+            [clj-facebook-graph.helper :as helper])
   (:import [java.lang Exception]
            [clj_facebook_graph FacebookGraphException]))
 
@@ -110,43 +111,6 @@
 ;(def server (start-server))
 ;(.stop (.get server))
 
-(defn extract-facebook-auth [session]
-  (:facebook-auth (val session)))
-
-(defn facebook-auth-user
-  "Get all friends of the current (logged in facebook) user."
-  [facebook-auth]
-  (with-facebook-auth facebook-auth (client/get [:me] {:extract :body})))
-
-(defn facebook-auth-by-name
-  "Take all sessions from the session-store and extracts the facebook-auth
-   information. Finally a map is created where the user's Facebook name is
-   associated with his current facebook-auth (access-token)."
-  []
-  (first (map #(let [facebook-auth (extract-facebook-auth %)
-                     user-name (:name (facebook-auth-user facebook-auth))]
-                 (identity {user-name
-                            facebook-auth}))
-              @session-store)))
-
-(defmacro with-facebook-auth-by-name
-  "Uses the informations created by #'facebook-auth-by-name to provide a
-   comfortable way to query the Facebook Graph API on the REPL by using
-   a Facebook name of a current logged in user.
-   Imagine you want to play around a little bit with the Facebook
-   Graph API on the REPL and your Facebook name is 'Max Mustermann'.
-   Then you log in to Facebook through the .../facebook-login URL.
-   Afterwards the facebook-auth (access token) information corresponding
-   to your Facebook account is associated with the corresponding HTTP
-   session. Now you can simply do the following on the REPL:
-
-   (with-facebook-auth-by-name \"Max Mustermann\" (fb-get [:me :friends]))
-
-   to list all your Facebook friends. Thereby an annoying manual lookup of
-   the corresponding access-token is avoided."
-  [name & body]
-  `(let [current-fb-users# (facebook-auth-by-name)]
-    (with-facebook-auth (current-fb-users# ~name) ~@body)))
 
 (def example-wall-post
      {:message "Check out this funny article"
@@ -158,3 +122,7 @@
       :actions "{\"name\": \"View on Zombo\", \"link\": \"http://www.zombo.com\"}"
       :privacy "{\"value\": \"ALL_FRIENDS\"}"
       :targeting "{\"countries\":\"US\",\"regions\":\"6,53\",\"locales\":\"6\"}"})
+
+(defmacro with-facebook-auth-by-name [name & body]
+  (list* 'clj-facebook-graph.helper/with-facebook-auth-by-name
+         'clj-facebook-graph.example/session-store name body))
