@@ -13,7 +13,7 @@
         [ring.middleware.session :only [wrap-session]]
         [ring.middleware.session.memory :only [memory-store]]
         [ring.handler.dump :only [handle-dump]]
-        [clj-facebook-graph.auth :only [facebook-auth-url with-facebook-auth]]
+        [clj-facebook-graph.auth :only [with-facebook-auth with-facebook-access-token make-auth-request]]
         [clj-facebook-graph.helper :only [facebook-base-url]]
         [clj-facebook-graph.ring-middleware :only [wrap-facebook-access-token-required
                                                    wrap-facebook-extract-callback-code
@@ -29,8 +29,8 @@
 (def name-id-map (atom {}))
 
 (defn create-friend-id-by-name [friends]
-  (into {} (map #(let [{:keys [name id]} %]
-                   [name id]) friends)))
+  (into {} (map (fn [{:keys [name id]}]
+                  [name id]) friends)))
 
 (defn get-friends-name-id-mapping [facebook-auth]
   (let [access-token (:access_token facebook-auth)]
@@ -63,31 +63,35 @@
   (request (merge req {:method :get :url url})))
 
 (defn get-album-overview [id]
-  (let [data (fb-get [id :albums] {:extract :data})]
-    (into [] (map #(let [{:keys [id name]} %]
-                     (identity {:name name :preview-image (str facebook-base-url "/" id "/picture?access_token=" (:access-token clj-facebook-graph.auth/*facebook-auth*))})) data))
-    ))
+  (map (fn [{:keys [id name]}]
+         {:name name
+          :preview-image (with-facebook-access-token
+                           (str facebook-base-url "/" id "/picture"))})
+       (fb-get [id :albums] {:extract :data})))
 
 (defn render-album-overview [id]
-  (let [data (get-album-overview id)]
-    (html (map #(let [{:keys [name preview-image]} %]
-                  (identity [:div [:h3 name] [:img {:src preview-image}]])) data))
-  ))
+  (html (map (fn [{:keys [name preview-image]}]
+               [:div [:h3 name] [:img {:src preview-image}]])
+             (get-album-overview id))))
 
 (defonce facebook-app-info {:client-id "your Facebook app id"
                             :client-secret "your Facebook app's secret"
                             :redirect-uri "http://localhost:8080/facebook-callback"
-                            :permissions  ["user_photos" "friends_photos" "publish_stream"]})
+                            :scope  ["user_photos" "friends_photos" "publish_stream"]})
 
 (defroutes app
-  (GET "/facebook-login" [] (redirect (facebook-auth-url facebook-app-info)))
-  (GET "/facebook-callback" request (handle-dump request))
-  (GET "/albums/:id" [id] (if (not clj-facebook-graph.auth/*facebook-auth*) (throw
+  (GET "/facebook-login" [] (redirect (:uri (make-auth-request facebook-app-info))))
+  (GET "/facebook-callback" request
+       (if-let [return-to (:return-to (:session request))]
+         (redirect return-to)
+         (handle-dump request)))
+  (GET "/albums/:id" [id] (if (not clj-facebook-graph.auth/*facebook-auth*)
+                            (throw
                              (FacebookGraphException.
                               {:error :facebook-login-required}))
-                              (if (.contains id "_")
-                                (render-album-overview {:name (.replaceAll id "_" " ")})
-                                (render-album-overview id))))
+                            (if (.contains id "_")
+                              (render-album-overview {:name (.replaceAll id "_" " ")})
+                              (render-album-overview id))))
   (GET "/show-session" {session :session} (str session))
   (route/not-found "Page not found"))
 
@@ -97,8 +101,8 @@
   (-> app
       (wrap-facebook-auth)
       (wrap-facebook-extract-callback-code facebook-app-info)
-      (wrap-session {:store (memory-store session-store)})
       (wrap-facebook-access-token-required facebook-app-info)
+      (wrap-session {:store (memory-store session-store)})
       (wrap-params)
       (wrap-stacktrace-web)))
 
