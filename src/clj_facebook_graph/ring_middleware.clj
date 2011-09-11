@@ -93,7 +93,9 @@
         (catch FacebookGraphException e
           (if (let [error (:error @e)] (or (auth-errors error)
                                            (= :facebook-login-required error)))
-            (let [session (assoc (:session request) :return-to (build-url request))
+            (let [session (if (= :get (:method request))
+                            (assoc (:session request) :return-to (build-url request))
+                            (:session request))
                   redirect-uri (:uri (make-auth-request facebook-app-info))]
               ;; we might want to pass a second argument to make-auth-request here to prevent CSRF.
               ;; this would have to be stored in the session (see wrap-facebook-extract-callback-code)

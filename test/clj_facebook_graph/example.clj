@@ -82,16 +82,20 @@
 (defroutes app
   (GET "/facebook-login" [] (redirect (:uri (make-auth-request facebook-app-info))))
   (GET "/facebook-callback" request
-       (if-let [return-to (:return-to (:session request))]
-         (redirect return-to)
-         (handle-dump request)))
-  (GET "/albums/:id" [id] (if (not clj-facebook-graph.auth/*facebook-auth*)
-                            (throw
-                             (FacebookGraphException.
-                              {:error :facebook-login-required}))
-                            (if (.contains id "_")
-                              (render-album-overview {:name (.replaceAll id "_" " ")})
-                              (render-album-overview id))))
+       (let [session (:session request)
+             return-to (:return-to session)
+             session (dissoc session :return-to)]
+         (if return-to
+           (assoc (redirect return-to) :session session)
+           (handle-dump request))))
+  (GET "/albums/:id" [id]
+       (if (not clj-facebook-graph.auth/*facebook-auth*)
+         (throw
+          (FacebookGraphException.
+           {:error :facebook-login-required}))
+         (if (.contains id "_")
+           (render-album-overview {:name (.replaceAll id "_" " ")})
+           (render-album-overview id))))
   (GET "/show-session" {session :session} (str session))
   (route/not-found "Page not found"))
 
