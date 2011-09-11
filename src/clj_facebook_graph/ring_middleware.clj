@@ -59,22 +59,18 @@
   (fn [request]
     (let [code (get-in request [:params "code"])
           callback-path (.getPath (java.net.URI. (:redirect-uri facebook-app-info)))]
-      (if (= callback-path (:uri request))
-        (if code
-          (let [params (:params ((wrap-keyword-params identity) request))
-                access-token (get-access-token facebook-app-info
-                                               params
-                                               (get-in request [:session :facebook-auth-request]))
-                session (add-facebook-auth (:session request) access-token)
-                session (dissoc session :facebook-auth-request)
-                return-to (:return-to session)
-                session (dissoc session :return-to)
-                redirect-uri (or return-to
-                                 (build-url (assoc request :query-params
-                                                   (dissoc params :code :state :scope))))]
-            (assoc (redirect redirect-uri) :session session))
-          (callback-handler request))
-
+      (if (and code (= callback-path (:uri request)))
+        (let [params (:params ((wrap-keyword-params identity) request))
+              access-token (get-access-token facebook-app-info
+                                             params
+                                             (get-in request [:session :facebook-auth-request]))
+              session (add-facebook-auth (:session request) access-token)
+              session (dissoc session :facebook-auth-request)
+              return-to (:return-to session)
+              session (dissoc session :return-to)]
+          (if return-to
+            (assoc (redirect return-to) :session session)
+            (callback-handler request)))
         (handler request)))))
 
 (defn wrap-facebook-access-token-required
