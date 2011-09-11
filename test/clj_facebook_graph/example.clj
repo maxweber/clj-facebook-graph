@@ -13,7 +13,7 @@
         [ring.middleware.session :only [wrap-session]]
         [ring.middleware.session.memory :only [memory-store]]
         [ring.handler.dump :only [handle-dump]]
-        [clj-facebook-graph.auth :only [with-facebook-auth with-facebook-access-token make-auth-request]]
+        [clj-facebook-graph.auth :only [with-facebook-auth with-facebook-access-token make-auth-request *facebook-auth*]]
         [clj-facebook-graph.helper :only [facebook-base-url]]
         [clj-facebook-graph.ring-middleware :only [wrap-facebook-access-token-required
                                                    wrap-facebook-extract-callback-code
@@ -44,11 +44,11 @@
 (defn wrap-facebook-id-by-name [client]
   (fn [request]
     (let [url (:url request)]
-      (if (and clj-facebook-graph.auth/*facebook-auth* (vector? url))
+      (if (and *facebook-auth* (vector? url))
         (let [[name] url]
           (if-let [name (:name name)]
             (let [friends-name-id-mapping
-                  (get-friends-name-id-mapping clj-facebook-graph.auth/*facebook-auth*)
+                  (get-friends-name-id-mapping *facebook-auth*)
                   id (friends-name-id-mapping name)
                   request (assoc request :url (assoc url 0 id))]
               (client request))
