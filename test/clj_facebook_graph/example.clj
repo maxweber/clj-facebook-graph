@@ -80,14 +80,6 @@
                             :scope  ["user_photos" "friends_photos" "publish_stream"]})
 
 (defroutes app
-  (GET "/facebook-login" [] (redirect (:uri (make-auth-request facebook-app-info))))
-  (GET "/facebook-callback" request
-       (let [session (:session request)
-             return-to (:return-to session)
-             session (dissoc session :return-to)]
-         (if return-to
-           (assoc (redirect return-to) :session session)
-           (handle-dump request))))
   (GET "/albums/:id" [id]
        (if (not clj-facebook-graph.auth/*facebook-auth*)
          (throw
@@ -103,8 +95,8 @@
 
 (defn wrap-app [app facebook-app-info] 
   (-> app
-      (wrap-facebook-auth)
-      (wrap-facebook-extract-callback-code facebook-app-info)
+      (wrap-facebook-auth facebook-app-info "/facebook-login")
+      (wrap-facebook-extract-callback-code facebook-app-info handle-dump)
       (wrap-facebook-access-token-required facebook-app-info)
       (wrap-session {:store (memory-store session-store)})
       (wrap-params)

@@ -55,20 +55,26 @@
    otherwise this middleware can not detect if the request is a redirect for the Facebook
    authentication or just a request with a code query parameter.
    "
-  [handler facebook-app-info]
+  [handler facebook-app-info callback-handler]
   (fn [request]
     (let [code (get-in request [:params "code"])
           callback-path (.getPath (java.net.URI. (:redirect-uri facebook-app-info)))]
-      (if (and code
-               (= callback-path (:uri request)))
-        (let [params (:params ((wrap-keyword-params identity) request))
-              redirect-uri (build-url (assoc request :query-params (dissoc params :code :state :scope)))
-              access-token (get-access-token facebook-app-info
-                                             params
-                                             (get-in request [:session :facebook-auth-request]))
-              session (add-facebook-auth (:session request) access-token)
-              session (dissoc session :facebook-auth-request)]
-          (assoc (redirect redirect-uri) :session session))
+      (if (= callback-path (:uri request))
+        (if code
+          (let [params (:params ((wrap-keyword-params identity) request))
+                access-token (get-access-token facebook-app-info
+                                               params
+                                               (get-in request [:session :facebook-auth-request]))
+                session (add-facebook-auth (:session request) access-token)
+                session (dissoc session :facebook-auth-request)
+                return-to (:return-to session)
+                session (dissoc session :return-to)
+                redirect-uri (or return-to
+                                 (build-url (assoc request :query-params
+                                                   (dissoc params :code :state :scope))))]
+            (assoc (redirect redirect-uri) :session session))
+          (callback-handler request))
+
         (handler request)))))
 
 (defn wrap-facebook-access-token-required
@@ -103,11 +109,13 @@
                 :session session))
             (throw e)))))))
 
-(defn wrap-facebook-auth [handler]
+(defn wrap-facebook-auth [handler facebook-app-info login-path]
   "Binds the facebook-auth (access-token) information to the thread bounded *facebook-auth*
    variable (by using with-facebook-auth) so it can be used by the Ring-style middleware
    for clj-http to access the Facebook Graph API."
   (fn [request]
-    (if-let [facebook-auth (get-in request [:session :facebook-auth])]
-      (with-facebook-auth facebook-auth (handler request))
-      (handler request))))
+    (if (and (= :get (:request-method request)) (= login-path (:uri request)))
+      (redirect (:uri (make-auth-request facebook-app-info)))
+      (if-let [facebook-auth (get-in request [:session :facebook-auth])]
+        (with-facebook-auth facebook-auth (handler request))
+        (handler request)))))
