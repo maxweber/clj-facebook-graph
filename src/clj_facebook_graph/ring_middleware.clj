@@ -93,7 +93,7 @@
         (catch FacebookGraphException e
           (if (let [error (:error @e)] (or (auth-errors error)
                                            (= :facebook-login-required error)))
-            (let [session (if (= :get (:method request))
+            (let [session (if (= :get (:request-method request))
                             (assoc (:session request) :return-to (build-url request))
                             (:session request))
                   redirect-uri (:uri (make-auth-request facebook-app-info))]
