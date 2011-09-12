@@ -7,13 +7,12 @@
 ; You must not remove this notice, or any other, from this software.
 
 (ns clj-facebook-graph.client
-  "A client for the Facebook Graph API based on clj-http."
-  (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url
-                                          facebook-fql-base-url]]
+  "A client for the Facebook Graph API based on clj-http and clj-oauth2."
+  (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url facebook-fql-base-url]]
         [clj-facebook-graph.auth :only [wrap-facebook-access-token]]
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
-        [clojure.contrib.json :only [read-json]]
-        [clj-http.util :only [url-encode]])
+        [clojure.contrib.json :only [read-json]] 
+        [clj-oauth2.client :only [wrap-oauth2]])
   (:require [clj-http.client :as client]))
 
 (defn wrap-facebook-url-builder [client]
@@ -76,21 +75,6 @@
               extraction)))
         response))))
 
-(defn form-urlencoded [m]
-  (apply str (interpose "&" (map
-                             (fn [[key value]]
-                               (str (url-encode (name key)) "=" (url-encode value))) m))))
-
-(defn wrap-form-params [client]
-  (fn [req]
-    (let [{:keys [form-params method]} req]
-      (if (and (= :post method) form-params)
-        (let [req (assoc req
-                    :body (form-urlencoded form-params)
-                    :content-type "application/x-www-form-urlencoded")]
-          (client req))
-        (client req)))))
-
 (defn wrap-fql [client]
   (fn [req]
     (let [{:keys [url fql]} req]
@@ -112,11 +96,11 @@
          wrap-facebook-exceptions
          wrap-exceptions
          wrap-request-fn
+         wrap-oauth2
          wrap-facebook-access-token
          wrap-json-response-conversion
          wrap-facebook-url-builder
          wrap-facebook-data-extractor
-         wrap-form-params
          wrap-fql
          ))
   ([request] (wrap-request request client/wrap-request)))
