@@ -46,7 +46,7 @@ the clj-facebook-graph.auth/with-facebook-auth macro:
     read on to find out how to receive one with clj-facebook-graph."})
 
     (with-facebook-auth facebook-auth 
-                        (client/get "https://graph.facebook.com/me/friends"))
+      (client/get "https://graph.facebook.com/me/friends"))
 
 The code lines above will return a list of all your ("/me/")
 Facebook friends, if you have received an access token with your
@@ -75,10 +75,11 @@ you will get a ClassNotFoundException for this class. In order to
 use it you have to provide some information about your Facebook app in
 the clj_facebook_graph.example.clj:
 
-    (defonce facebook-app-info {:client-id "your Facebook app id"
-                            :client-secret "your Facebook app's secret"
-                            :redirect-uri "http://localhost:8080/facebook-callback"
-                            :permissions  ["user_photos" "friends_photos"]})
+    (defonce facebook-app-info
+      {:client-id "your Facebook app id"
+       :client-secret "your Facebook app's secret"
+       :redirect-uri "http://localhost:8080/facebook-callback"
+       :scope  ["user_photos" "friends_photos"]})
 
 Fill in the app id (client-id) and secret (client-secret) of your
 [Facebook app](http://www.facebook.com/developers/apps.php).

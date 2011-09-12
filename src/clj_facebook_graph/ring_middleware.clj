@@ -8,10 +8,10 @@
 
 (ns clj-facebook-graph.ring-middleware
   "Middleware for Ring to realize a simple Facebook authentication."
-  (:use [clj-facebook-graph.helper :only [parse-params build-url]]
-        [clj-facebook-graph.auth :only [get-access-token facebook-auth-url-str with-facebook-auth]]
+  (:use [clj-facebook-graph.helper :only [build-url]]
+        [clj-facebook-graph.auth :only [get-access-token with-facebook-auth make-auth-request]]
         [ring.util.response :only [redirect]]
-        [clj-http.client :only [generate-query-string]])
+        [ring.middleware.keyword-params])
   (:import clj_facebook_graph.FacebookGraphException))
 
 (defn add-facebook-auth
@@ -55,21 +55,23 @@
    otherwise this middleware can not detect if the request is a redirect for the Facebook
    authentication or just a request with a code query parameter.
    "
-  [handler facebook-app-info]
-  (let [{:keys [client-id client-secret]} facebook-app-info]
-    (fn [request]
-      (let [code (get-in request [:params "code"])
-            callback-path (.getPath (java.net.URI. (:redirect-uri facebook-app-info)))]
-        (if (and code
-                 (= callback-path (:uri request)))
-          (let [query-params (parse-params (:query-string request))
-                query-params (dissoc query-params "code")
-                redirect-uri (build-url (assoc request :query-string
-                                               (generate-query-string query-params)))
-                access-token (get-access-token client-id redirect-uri client-secret code)
-                session (add-facebook-auth (:session request) access-token)]
-            (assoc (redirect redirect-uri) :session session))
-          (handler request))))))
+  [handler facebook-app-info callback-handler]
+  (fn [request]
+    (let [code (get-in request [:params "code"])
+          callback-path (.getPath (java.net.URI. (:redirect-uri facebook-app-info)))]
+      (if (and code (= callback-path (:uri request)))
+        (let [params (:params ((wrap-keyword-params identity) request))
+              access-token (get-access-token facebook-app-info
+                                             params
+                                             (get-in request [:session :facebook-auth-request]))
+              session (add-facebook-auth (:session request) access-token)
+              session (dissoc session :facebook-auth-request)
+              return-to (:return-to session)
+              session (dissoc session :return-to)]
+          (if return-to
+            (assoc (redirect return-to) :session session)
+            (callback-handler request)))
+        (handler request)))))
 
 (defn wrap-facebook-access-token-required
   "If the middleware for Facebook access through clj-http throws a FacebookGraphException
@@ -85,8 +87,7 @@
    If you need a Facebook at any point of the Ring request processing, you can throw
    a FacebookGraphException with the following error: {:error :facebook-login-required}."
   [handler facebook-app-info]
-  (let [{:keys [client-id permissions]} facebook-app-info
-        auth-errors #{[:OAuthException :invalid-access-token]
+  (let [auth-errors #{[:OAuthException :invalid-access-token]
                       [:OAuthException :access-token-required]}]
     (fn [request]
       (try
@@ -94,15 +95,23 @@
         (catch FacebookGraphException e
           (if (let [error (:error @e)] (or (auth-errors error)
                                            (= :facebook-login-required error)))
-            (let [redirect-uri (build-url request)]
-              (redirect (facebook-auth-url-str client-id redirect-uri permissions)))
+            (let [session (if (= :get (:request-method request))
+                            (assoc (:session request) :return-to (build-url request))
+                            (:session request))
+                  redirect-uri (:uri (make-auth-request facebook-app-info))]
+              ;; we might want to pass a second argument to make-auth-request here to prevent CSRF.
+              ;; this would have to be stored in the session (see wrap-facebook-extract-callback-code)
+              (assoc (redirect redirect-uri)
+                :session session))
             (throw e)))))))
 
-(defn wrap-facebook-auth [handler]
+(defn wrap-facebook-auth [handler facebook-app-info login-path]
   "Binds the facebook-auth (access-token) information to the thread bounded *facebook-auth*
    variable (by using with-facebook-auth) so it can be used by the Ring-style middleware
    for clj-http to access the Facebook Graph API."
   (fn [request]
-    (if-let [facebook-auth (get-in request [:session :facebook-auth])]
-      (with-facebook-auth facebook-auth (handler request))
-      (handler request))))
+    (if (and (= :get (:request-method request)) (= login-path (:uri request)))
+      (redirect (:uri (make-auth-request facebook-app-info)))
+      (if-let [facebook-auth (get-in request [:session :facebook-auth])]
+        (with-facebook-auth facebook-auth (handler request))
+        (handler request)))))

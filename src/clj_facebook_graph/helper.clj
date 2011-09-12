@@ -10,8 +10,8 @@
   "Some helper functions."
   (:use [clojure.contrib.json :only [read-json read-json-from Read-JSON-From]]
         [clojure.java.io :only [reader]]
-        [clj-http.client :only [generate-query-string]]
         [clj-http.client :only [unexceptional-status?]]
+        [clj-oauth2.uri :only [make-uri]]
         [clojure.string :only [blank?]]
         ring.middleware.params)
   (:import
@@ -21,32 +21,21 @@
 
 (def facebook-fql-base-url "https://api.facebook.com/method/fql.query")
 
-(defn parse-params
-  "Transforms the query parameters of an URL into a map of parameter value pairs (both are strings)."
-  [params]
-  (let [f (ns-resolve 'ring.middleware.params 'parse-params)]
-    (f params "UTF-8")))
-
 (extend-type (Class/forName "[B")
   Read-JSON-From
-   (read-json-from [input keywordize? eof-error? eof-value]
-                   (read-json-from (PushbackReader. (InputStreamReader.
-                                                      (ByteArrayInputStream. input)))
+  (read-json-from [input keywordize? eof-error? eof-value]
+    (read-json-from (PushbackReader. (InputStreamReader.
+                                      (ByteArrayInputStream. input)))
                     keywordize? eof-error? eof-value)))
 
 (defn build-url [request]
   "Builds a URL string which corresponds to the information of the request."
-  (let [{:keys [server-port server-name uri query-string scheme]} request]
-    (str (name scheme) "://" server-name (when server-port (str ":" server-port)) uri
-         (when (not (blank? query-string)) "?") query-string)))
-
-(defn request-to-url
-  "Transforms a clj-http request with its query parameters into a full URL."
-  [request]
-  (let [{:keys [url query-params]} request]
-    (if (seq query-params)
-      (str url "?" (generate-query-string query-params))
-      url)))
+  (let [{:keys [server-port server-name uri query-params scheme]} request]
+    (str (make-uri {:scheme (name scheme)
+                    :host server-name
+                    :port server-port
+                    :path uri
+                    :query query-params}))))
 
 (defn wrap-exceptions [client]
   "An alternative Ring-style middleware to the #'clj-http.core/wrap-exceptions. This
