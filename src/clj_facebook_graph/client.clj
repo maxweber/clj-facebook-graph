@@ -11,7 +11,7 @@
   (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url facebook-fql-base-url]]
         [clj-facebook-graph.auth :only [wrap-facebook-access-token]]
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
-        [clojure.contrib.json :only [read-json]] 
+        [clojure.data.json :only [read-json]] 
         [clj-oauth2.client :only [wrap-oauth2]])
   (:require [clj-http.client :as client]))
 
@@ -32,7 +32,7 @@
 
 (defn wrap-json-response-conversion [client]
   "Automatically transforms the body of a response of a Facebook Graph API request from JSON to a Clojure
-   data structure through the use of clojure.contrib.json. It checks if the header Content-Type
+   data structure through the use of clojure.data.json. It checks if the header Content-Type
    is 'text/javascript' which the Facebook Graph API returns in the case of a JSON response."
   (fn [req]
     (let [{:keys [headers] :as resp} (client req)

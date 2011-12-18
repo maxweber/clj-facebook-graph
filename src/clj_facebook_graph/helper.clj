@@ -8,7 +8,7 @@
 
 (ns clj-facebook-graph.helper
   "Some helper functions."
-  (:use [clojure.contrib.json :only [read-json read-json-from Read-JSON-From]]
+  (:use [clojure.data.json :only [read-json read-json-from Read-JSON-From]]
         [clojure.java.io :only [reader]]
         [clj-http.client :only [unexceptional-status?]]
         [clj-oauth2.uri :only [make-uri]]

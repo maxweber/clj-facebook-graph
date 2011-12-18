@@ -1,6 +1,6 @@
 (ns clj-facebook-graph.auth
   (:use [clj-facebook-graph.helper :only [facebook-base-url facebook-fql-base-url]] 
-        [clojure.contrib.json :only [read-json]])
+        [clojure.data.json :only [read-json]])
   (:require [clj-oauth2.client :as oauth2]
             [clojure.string :as str])
   (:import [org.apache.commons.codec.binary Base64]

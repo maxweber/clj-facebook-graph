@@ -7,7 +7,7 @@
 ; You must not remove this notice, or any other, from this software.
 
 (ns clj-facebook-graph.error-handling
-  (:use [clojure.contrib.json])
+  (:use [clojure.data.json])
   (:import clj_facebook_graph.FacebookGraphException))
 
 (def
