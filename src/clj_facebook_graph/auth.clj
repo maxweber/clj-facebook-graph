@@ -1,6 +1,6 @@
 (ns clj-facebook-graph.auth
   (:use [clj-facebook-graph.helper :only [facebook-base-url facebook-fql-base-url]] 
-        [clojure.contrib.json :only [read-json]])
+        [clojure.data.json :only [read-json]])
   (:require [clj-oauth2.client :as oauth2]
             [clojure.string :as str])
   (:import [org.apache.commons.codec.binary Base64]
@@ -24,7 +24,7 @@
 (defn make-auth-request [facebook-app-info]
   (oauth2/make-auth-request (merge facebook-oauth2-endpoint facebook-app-info)))
 
-(defonce *facebook-auth* nil)
+(defonce ^:dynamic *facebook-auth* nil)
 
 (defmacro with-facebook-auth
   "Binds the *facebook-auth* variable to the current thread scope. The *facebook-auth* variable is

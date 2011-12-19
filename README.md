@@ -111,7 +111,7 @@ use both or even mix it. This shortcut works for every part of the
 The Facebook Graph API is a restful web service which almost always
 returns a JSON document as body of the response. So clj-facebook-graph
 automatically converts the JSON body into a Clojure data structure
-(clojure.contrib.json/read-json), if the Content-Type is
+(clojure.data.json/read-json), if the Content-Type is
 "text/javascript". The Facebook Graph API uses "text/javascript"
 instead of the more precise mime type "application/json".
 
