@@ -48,7 +48,10 @@
       (if (and *facebook-auth* (string? url)
                (or (.startsWith url facebook-base-url)
                    (.startsWith url facebook-fql-base-url)))
-        (client (assoc req :oauth2 (oauth2-access-token)))
+        (client (do
+                  (-> req
+                      (assoc :oauth2 (oauth2-access-token))
+                      (assoc-in [:query-params :access_token] (:access-token *facebook-auth*)))))
         (client req)))))
 
 (defn with-facebook-access-token [uri]
