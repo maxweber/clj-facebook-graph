@@ -3,3 +3,15 @@ pom.xml
 lib
 classes
 .lein*
+*~
+*#*
+/pom.xml
+*jar
+/lib
+/classes
+/native
+/.lein-plugins
+/.lein-failures
+/checkouts
+/.lein-deps-sum
+.DS_Store
