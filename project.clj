@@ -1,6 +1,6 @@
 (defproject clj-facebook-graph "0.4.0"
   :description "A Clojure client for the Facebook Graph API."
-  :dependencies [[org.clojure/clojure "1.4.0-beta3"]
+  :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/data.json "0.1.2"  :exclude [org.clojure/clojure]]
                  [ring/ring-core "1.0.1"  :exclude [org.clojure/clojure]]
 
