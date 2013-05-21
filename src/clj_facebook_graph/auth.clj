@@ -10,7 +10,8 @@
 (def facebook-oauth2-endpoint
   {:access-query-param :access_token
    :authorization-uri "https://graph.facebook.com/oauth/authorize"
-   :access-token-uri "https://graph.facebook.com/oauth/access_token"})
+   :access-token-uri "https://graph.facebook.com/oauth/access_token"
+   :grant-type "authorization_code"})
 
 (defn get-access-token
   "Fetches the access token using clj-oauth2/client."
