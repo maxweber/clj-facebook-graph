@@ -72,7 +72,7 @@
               (if-let [url (get-in body [:paging :next])]
                 (lazy-cat extraction
                           (the-client {:method :get :url url :extract :data :paging true}))
-                [])
+                extraction)
               extraction)))
         response))))
 
