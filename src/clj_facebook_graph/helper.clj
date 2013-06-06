@@ -11,7 +11,7 @@
   (:use [clojure.data.json :only [read-json read-json-from Read-JSON-From]]
         [clojure.java.io :only [reader]]
         [clj-http.client :only [unexceptional-status?]]
-        [clj-oauth2.uri :only [make-uri]]
+        [uri.core :only [make]]
         [clojure.string :only [blank?]]
         ring.middleware.params)
   (:import
@@ -31,11 +31,11 @@
 (defn build-url [request]
   "Builds a URL string which corresponds to the information of the request."
   (let [{:keys [server-port server-name uri query-params scheme]} request]
-    (str (make-uri {:scheme (name scheme)
-                    :host server-name
-                    :port server-port
-                    :path uri
-                    :query query-params}))))
+    (str (make {:scheme (name scheme)
+                :host server-name
+                :port server-port
+                :path uri
+                :query query-params}))))
 
 (defn wrap-exceptions [client]
   "An alternative Ring-style middleware to the #'clj-http.core/wrap-exceptions. This
