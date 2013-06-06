@@ -13,7 +13,8 @@
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
         [clojure.data.json :only [read-json]] 
         [clj-oauth2.client :only [wrap-oauth2]])
-  (:require [clj-http.client :as client])
+  (:require [clj-http.client :as client]
+            [ring.util.codec])
   (:refer-clojure :exclude [get]))
 
 (defn wrap-facebook-url-builder [client]
@@ -70,9 +71,10 @@
                 the-client (wrap-facebook-data-extractor client)]
             (if paging
               (if-let [url (get-in body [:paging :next])]
-                (lazy-cat extraction
-                          (the-client {:method :get :url url :extract :data :paging true}))
-                [])
+                (let [query-params (-> url client/parse-url :query-string ring.util.codec/form-decode)]
+                  (lazy-cat extraction
+                            (the-client {:method :get :url url :query-params query-params :extract :data :paging true})))
+                extraction)
               extraction)))
         response))))
 
