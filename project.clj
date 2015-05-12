@@ -4,7 +4,7 @@
                  ;; [org.clojure/data.json "0.1.1"]
                  [org.clojure/data.json "0.2.6"]
                  [ring/ring-core "1.0.1"]
-                 [clj-http "0.2.6"]
+                 [clj-http "1.1.2"]
                  [clj-oauth2 "0.1.0"]]
   :dev-dependencies [[ring/ring-devel "1.0.1"]
                      [ring/ring-jetty-adapter "1.0.0"]

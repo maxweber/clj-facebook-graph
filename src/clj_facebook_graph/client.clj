@@ -98,11 +98,9 @@
          wrap-request-fn
          wrap-oauth2
          wrap-facebook-access-token
-         wrap-json-response-conversion
          wrap-facebook-url-builder
          wrap-facebook-data-extractor
-         wrap-fql
-         ))
+         wrap-fql))
   ([request] (wrap-request request client/wrap-request)))
 
 (def request
@@ -111,7 +109,7 @@
 (defn get
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [req]]
-  (request (merge req {:method :get :url url})))
+  (request (merge req {:method :get :url url :as :json})))
 
 (defn post
   "Like #'request, but sets the :method and :url as appropriate."
