@@ -1,4 +1,4 @@
-(defproject yayitswei/clj-facebook-graph "0.4.1"
+(defproject yayitswei/clj-facebook-graph "0.4.2"
   :description "A Clojure client for the Facebook Graph API."
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.json "0.2.6"]
