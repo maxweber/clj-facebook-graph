@@ -13,7 +13,8 @@
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
         [clj-oauth2.client :only [wrap-oauth2]])
   (:require [clj-http.client :as client]
-            [clojure.data.json]))
+            [clojure.data.json])
+  (:refer-clojure :exclude [get]))
 
 (defn wrap-facebook-url-builder [client]
   "Offers some convenience by assemble a Facebook Graph API URL from a vector of keywords or strings.
