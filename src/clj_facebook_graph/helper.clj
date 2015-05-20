@@ -8,8 +8,7 @@
 
 (ns clj-facebook-graph.helper
   "Some helper functions."
-  (:use [clojure.data.json :only [read-json read-json-from Read-JSON-From]]
-        [clojure.java.io :only [reader]]
+  (:use [clojure.java.io :only [reader]]
         [clj-http.client :only [unexceptional-status?]]
         [clj-oauth2.uri :only [make-uri]]
         [clojure.string :only [blank?]]
@@ -20,13 +19,6 @@
 (def facebook-base-url "https://graph.facebook.com")
 
 (def facebook-fql-base-url "https://api.facebook.com/method/fql.query")
-
-(extend-type (Class/forName "[B")
-  Read-JSON-From
-  (read-json-from [input keywordize? eof-error? eof-value]
-    (read-json-from (PushbackReader. (InputStreamReader.
-                                      (ByteArrayInputStream. input)))
-                    keywordize? eof-error? eof-value)))
 
 (defn build-url [request]
   "Builds a URL string which corresponds to the information of the request."

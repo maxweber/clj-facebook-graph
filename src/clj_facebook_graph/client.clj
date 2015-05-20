@@ -11,9 +11,10 @@
   (:use [clj-facebook-graph.helper :only [wrap-exceptions facebook-base-url facebook-fql-base-url]]
         [clj-facebook-graph.auth :only [wrap-facebook-access-token]]
         [clj-facebook-graph.error-handling :only [wrap-facebook-exceptions]]
-        [clojure.data.json :only [read-json]] 
         [clj-oauth2.client :only [wrap-oauth2]])
-  (:require [clj-http.client :as client]))
+  (:require [clj-http.client :as client]
+            [clojure.data.json])
+  (:refer-clojure :exclude [get]))
 
 (defn wrap-facebook-url-builder [client]
   "Offers some convenience by assemble a Facebook Graph API URL from a vector of keywords or strings.
@@ -23,7 +24,7 @@
   (here \"friends\"), you can also provide three or more
   keywords (or strings) like in the case of 'https://graph.facebook.com/me/videos/uploaded' for example."
   (fn [req]
-    (let [{:keys [url]} req]    
+    (let [{:keys [url]} req]
       (if (vector? url)
         (let [url-parts-as-str (map #(if (keyword? %) (name %) (str %)) url)
               url (apply str (interpose "/" (conj url-parts-as-str facebook-base-url)))]
@@ -41,7 +42,7 @@
                (or
                 (.startsWith content-type "text/javascript")
                 (.startsWith content-type "application/json")))
-        (assoc resp :body (read-json (:body resp)))
+        (assoc resp :body (clojure.data.json/read-str (:body resp)))
         resp))))
 
 (defn wrap-facebook-data-extractor [client]
@@ -98,21 +99,18 @@
          wrap-request-fn
          wrap-oauth2
          wrap-facebook-access-token
-         wrap-json-response-conversion
          wrap-facebook-url-builder
          wrap-facebook-data-extractor
-         wrap-fql
-         ))
+         wrap-fql))
   ([request] (wrap-request request client/wrap-request)))
 
-(def
-  request
+(def request
   (wrap-request #'clj-http.core/request))
 
 (defn get
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [req]]
-  (request (merge req {:method :get :url url})))
+  (request (merge req {:method :get :url url :as :json})))
 
 (defn post
   "Like #'request, but sets the :method and :url as appropriate."
