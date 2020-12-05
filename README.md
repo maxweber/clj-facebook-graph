@@ -1,3 +1,5 @@
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/maxweber/clj-facebook-graph)
+
 # clj-facebook-graph
 
 clj-facebook-graph is a simple Clojure client for the Facebook Graph
