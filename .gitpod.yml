@@ -1,0 +1,10 @@
+tasks:
+  - init: 'echo "TODO: Replace with init/build command"'
+    command: 'echo "TODO: Replace with command to start project"'
+image:
+  file: .gitpod.Dockerfile
+vscode:
+  extensions:
+    - borkdude.clj-kondo@2020.5.9:o++fn6uTN96bSP0Koi4Pig==
+    - betterthantomorrow.calva@2.0.100:PdLu8lvpL7sfkmx4BRFdgQ==
+    # - stiansivertsen.visualclojure@2.0.0:iSX4ykHPWWnyTAn/kDv+Fg==
